@@ -91,7 +91,7 @@
   (define (close-enough? v1 v2)
     (< (abs (- v1 v2)) 0.00001))
   (define (try guess)
-    (displayln guess)
+    ;(displayln guess)
     (let ((next (f guess)))
       (if (close-enough? guess next)
           next
@@ -115,6 +115,80 @@
               (f n d (+ i 1))))))
   (f n d 1))
 
-(cont-frac (lambda (i) 1.0)
-           (lambda (i) 1.0)
-           10)
+;(cont-frac (lambda (i) 1.0)
+;           (lambda (i) 1.0)
+;           10)
+
+; 1.38
+;(cont-frac (lambda (i) 1.0)
+;           (lambda (i)
+;             (cond ((= i 1) 1.0)
+;                   ((= i 2) 2.0)
+;                   (else (let ((i (- i 2)))
+;                           (let ((remain (remainder i 3))
+;                                 (sub (/ i 3)))
+;                             (if (= remain 0)
+;                                 (* sub 2.0)
+;                                 1.0))))))
+;           10)
+
+; 1.39
+(define (tan-cf x k)
+  (define (f x i)
+    (displayln i)
+    (let ((n (- (* i 2) 1)))
+      (cond ((= i 1) (/ x (- 1 (f x (+ i 1)))))
+            ((= i k) (/ (* x x) n))
+            (else (/ (* x x) (- n (f x (+ i 1))))))))
+  (f x 1))
+
+;(tan-cf 1 3)
+
+; 1.40
+(define (deriv g)
+  (lambda (x)
+    (/ (- (g (+ x dx)) (g x))
+       dx)))
+
+(define dx 0.000001)
+
+(define (newton-transform g)
+  (lambda (x)
+    (- x (/ (g x) ((deriv g) x)))))
+
+(define (newton-method g guess)
+  (fixed-point (newton-transform g) guess))
+
+(define (cubic a b c)
+  (lambda (x)
+    (+ (* x x x)
+       (* a (* x x))
+       (* b x)
+       c)))
+
+;(newton-method (cubic 1 1 1) 1)
+
+; 1.41
+(define (double f)
+  (lambda (x)
+    (f (f x))))
+
+;(((double (double double)) inc) 5)
+
+; 1.42
+(define (square x) (* x x))
+
+(define (compose f g)
+  (lambda (x) (f (g x))))
+
+;((compose square inc) 6)
+
+; 1.43
+(define (repeated f times)
+  (define (step f i)
+    (if (= i times)
+        (lambda (x) (f x))
+        (step (lambda (x) (f (f x))) (+ i 1))))
+  (step f 1))
+
+((repeated square 2) 5)
