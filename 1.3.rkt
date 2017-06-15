@@ -162,7 +162,7 @@
 (define (cubic a b c)
   (lambda (x)
     (+ (* x x x)
-       (* a (* x x))
+       (* a x x)
        (* b x)
        c)))
 
@@ -191,4 +191,47 @@
         (step (lambda (x) (f (f x))) (+ i 1))))
   (step f 1))
 
-((repeated square 2) 5)
+;((repeated square 2) 5)
+
+; 1.44
+(define (smooth f)
+  (/ (+ (lambda (x) (f (- x dx)))
+        (lambda (x) (f x))
+        (lambda (x) (f (+ x dx))))
+     3))
+(define (smooth-re f)
+  (repeated smooth 5))
+
+; 1.45
+(define (average x y)
+  (/ (+ x y) 2))
+
+(define (powers x n)
+  (define (step x i)
+    (if (= i 1)
+        x
+        (* x (powers x (- i 1)))))
+  (step x n))
+
+(define (power x n)
+  (fixed-point (lambda (y) (average
+                            y
+                            (/ x (powers y (- n 1)))))
+               1.0))
+
+;(power 2 10)
+;(powers 2 10)
+;unresolved
+
+; 1.46
+(define (iterative-improve good-enough? improve)
+  (define (try guess)
+    (let ((next (improve guess)))
+      (if (good-enough? guess next)
+          next
+          (try next))))
+  (lambda (guess)
+    (try guess)))
+
+(define (fixed-point-new guess good-enough? improve)
+  ((iterative-improve good-enough? improve) guess))
